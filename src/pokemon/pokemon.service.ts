@@ -8,6 +8,7 @@ import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { isValidObjectId, Model } from 'mongoose';
 import { Pokemon } from './entities/pokemon.entity';
 import { InjectModel } from '@nestjs/mongoose';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class PokemonService {
@@ -32,8 +33,14 @@ export class PokemonService {
     }
   }
 
-  findAll() {
-    const pokemons = this.pokemonModel.find();
+  findAll(paginationDto: PaginationDto) {
+    const { limit = 20, offset = 0 } = paginationDto;
+    const pokemons = this.pokemonModel
+      .find()
+      .limit(limit)
+      .skip(offset)
+      .sort({ no: 1 })
+      .select('-__v');
     return pokemons;
   }
 
@@ -112,5 +119,23 @@ export class PokemonService {
       );
     }
     return pokemonEliminado;
+  }
+
+  async createMany(pokemons: CreatePokemonDto[]) {
+    try {
+      pokemons.forEach((pokemon) => {
+        pokemon.name = pokemon.name.toLowerCase();
+      });
+      const pokemonsCreados = await this.pokemonModel.create(pokemons);
+      return pokemonsCreados;
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new BadRequestException(
+          `Ya existe un Pokemon con ${JSON.stringify(error.keyValue)}`,
+        );
+      }
+      console.log(error);
+      throw new Error('Error en la creación del Pokemon - Verificar logs');
+    }
   }
 }
