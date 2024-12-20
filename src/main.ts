@@ -18,6 +18,10 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000);
+  const { PORT = 3000 } = process.env;
+
+  await app.listen(PORT, () => {
+    console.log(`Servidor corriendo en el puerto ${PORT} 🚀`);
+  });
 }
 bootstrap();

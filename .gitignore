@@ -4,6 +4,9 @@
 # Docker
 docker-compose.yml
 
+# Variables de entorno
+.env
+
 # compiled output
 /dist
 /node_modules
